@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <meta name="description" content="Generate Free Fire access tokens easily with Obscura Coder. Extract Eat tokens from discstore URLs and get your FF token instantly.">
+    <meta name="description" content="Parse Free Fire access info from discstore URLs instantly with Obscura Coder.">
     <meta name="google-site-verification" content="qzVNIIPBo113_dzwY5oR37s4zWrX353ihmVUhQr_cK0" />
-    <title>Free Fire Eat Token Tool | OBSCURA CODER</title>
+    <title>Free Fire Eat Token Parser | OBSCURA CODER</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -26,7 +26,6 @@
         .animate-in{animation:fadeIn 0.4s ease forwards;}
         @keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
         .copy-btn-success{background-color:#10b981 !important;transition:0.2s;}
-        .token-card{background:linear-gradient(135deg,rgba(139,92,246,0.15)0%,rgba(217,70,239,0.1)100%);border-left:3px solid #d946ef;}
         .scroll-box{background:linear-gradient(135deg,rgba(139,92,246,0.15)0%,rgba(217,70,239,0.1)100%);border-left:3px solid #d946ef;max-height:120px;overflow-y:auto;padding:12px;border-radius:8px;font-family:monospace;font-size:11px;word-break:break-all;color:#fff;}
         .scroll-box-large{background:linear-gradient(135deg,rgba(139,92,246,0.15)0%,rgba(217,70,239,0.1)100%);border-left:3px solid #d946ef;max-height:250px;overflow-y:auto;padding:12px;border-radius:8px;font-family:monospace;font-size:11px;word-break:break-all;color:#fff;white-space:pre-wrap;}
         .scroll-box::-webkit-scrollbar,.scroll-box-large::-webkit-scrollbar{width:4px;}
@@ -45,13 +44,11 @@
 <body>
 <div class="w-full max-w-[480px] relative z-10">
     <div class="cyber-card p-6 sm:p-8">
-        <!-- Header without logo and tutorial -->
         <div class="flex flex-col items-center mb-8">
-            <h1 class="text-3xl font-bold title-font text-white text-center leading-tight tracking-wide">ACCESS GENERATOR</h1>
+            <h1 class="text-3xl font-bold title-font text-white text-center leading-tight tracking-wide">ACCESS PARSER</h1>
             <p class="text-fuchsia-400 text-sm font-medium tracking-[0.2em] mt-1 uppercase">by OBSCURA CODER</p>
         </div>
 
-        <!-- How to use section -->
         <div class="bg-white/5 border border-white/10 rounded-xl p-4 mb-6">
             <div class="flex items-center gap-2 mb-3 border-b border-white/5 pb-2">
                 <i class="fas fa-book-open text-fuchsia-400 text-xs"></i><span class="text-xs font-bold text-white uppercase tracking-wider">How to use</span>
@@ -61,28 +58,26 @@
                     <span class="bg-fuchsia-500/20 text-fuchsia-400 font-bold px-2 py-0.5 rounded text-[10px] h-fit mt-0.5">1</span>
                     <div>
                         <p>Select Provider & Login below.</p>
-                        <p class="text-[10px] text-green-500 mt-0.5"><i class="fas fa-shield-alt"></i> Safe: Official Garena Server (No Scam Risk)</p>
+                        <p class="text-[10px] text-green-500 mt-0.5"><i class="fas fa-shield-alt"></i> Safe: Official Garena Server</p>
                     </div>
                 </div>
                 <div class="flex gap-3 text-[11px] text-gray-400">
                     <span class="bg-fuchsia-500/20 text-fuchsia-400 font-bold px-2 py-0.5 rounded text-[10px] h-fit mt-0.5">2</span>
                     <div class="w-full">
-                        <p class="mb-2">After login, copy the URL containing <code class="text-fuchsia-300">eat=</code> parameter</p>
+                        <p class="mb-2">After login, copy the URL containing <code class="text-fuchsia-300">eat=</code></p>
                         <div class="bg-fuchsia-500/5 border border-fuchsia-500/10 p-2 rounded mb-2">
                             <p class="text-[10px] text-gray-400 mb-1">Example URL:</p>
-                            <code class="text-[9px] text-gray-300 break-all block leading-tight">https://discstore.recargajogo.com.br/?eat=14f060774299fb93a5...&lang=en&region=IND&account_id=7669969208&nickname=...</code>
+                            <code class="text-[9px] text-gray-300 break-all block leading-tight">https://discstore.kiosgamer.co.id/?eat=a031b3fc...&lang=en&region=IND&account_id=7385769786&nickname=...</code>
                         </div>
-                        <p class="text-[10px] text-gray-500">The tool will extract the eat token automatically</p>
                     </div>
                 </div>
                 <div class="flex gap-3 text-[11px] text-gray-400">
                     <span class="bg-fuchsia-500/20 text-fuchsia-400 font-bold px-2 py-0.5 rounded text-[10px] h-fit mt-0.5">3</span>
-                    <p>Paste the FULL URL below and click GENERATE</p>
+                    <p>Paste the FULL URL below and click PARSE</p>
                 </div>
             </div>
         </div>
 
-        <!-- Provider selection -->
         <div class="mb-5">
             <div class="flex justify-between items-end mb-2">
                 <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Select Provider & Login</span>
@@ -96,7 +91,6 @@
             </div>
         </div>
 
-        <!-- Input -->
         <div class="mb-5">
             <div class="relative group">
                 <input type="text" id="tokenInp" class="cyber-input w-full rounded-xl py-3.5 pl-4 pr-10 text-sm placeholder-gray-600" placeholder="Paste full discstore URL here..." autocomplete="off">
@@ -107,35 +101,26 @@
             </div>
         </div>
 
-        <!-- Generate button -->
-        <button onclick="processToken()" id="btn" class="btn-grad w-full rounded-xl py-4 font-bold title-font text-white text-base tracking-widest flex items-center justify-center gap-2 mb-6">GENERATE ACCESS <i class="fas fa-arrow-right text-xs"></i></button>
+        <button onclick="processToken()" id="btn" class="btn-grad w-full rounded-xl py-4 font-bold title-font text-white text-base tracking-widest flex items-center justify-center gap-2 mb-6">PARSE INFO <i class="fas fa-arrow-right text-xs"></i></button>
         
-        <!-- Output -->
         <div id="output" class="hidden animate-in mb-6">
             <div class="bg-black/40 border border-fuchsia-500/30 rounded-xl p-4 relative overflow-hidden">
                 <div class="info-grid">
                     <div class="info-item"><div class="label">Nickname</div><div class="value" id="nick">-</div></div>
                     <div class="info-item"><div class="label">Region</div><div class="value" id="reg">-</div></div>
                     <div class="info-item"><div class="label">Account UID</div><div class="value" id="aid">-</div></div>
-                    <div class="info-item"><div class="label">Platform</div><div class="value" id="platform">-</div></div>
+                    <div class="info-item"><div class="label">Lang</div><div class="value" id="platform">-</div></div>
                 </div>
                 <div class="mb-4 mt-4">
                     <div class="flex justify-between items-center mb-2">
-                        <span class="text-[10px] font-bold text-fuchsia-400 uppercase tracking-wider">Extracted Access Token</span>
+                        <span class="text-[10px] font-bold text-fuchsia-400 uppercase tracking-wider">Extracted Eat Token</span>
                         <button onclick="copyAccessTokenOnly()" id="copyTokenBtn" class="text-[10px] bg-fuchsia-600/40 hover:bg-fuchsia-600 px-3 py-1.5 rounded-lg transition flex items-center gap-1"><i class="fas fa-copy text-[10px]"></i> COPY TOKEN</button>
                     </div>
                     <div class="scroll-box-token" id="accessTokenDisplay">-</div>
                 </div>
-                <div id="jwtContainer" class="mb-4 hidden">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-[10px] font-bold text-fuchsia-400 uppercase tracking-wider">JWT Token</span>
-                        <button onclick="copyJwtTokenOnly()" id="copyJwtBtn" class="text-[10px] bg-fuchsia-600/40 hover:bg-fuchsia-600 px-3 py-1.5 rounded-lg transition flex items-center gap-1"><i class="fas fa-copy text-[10px]"></i> COPY JWT</button>
-                    </div>
-                    <div class="scroll-box" id="jwtTokenDisplay">-</div>
-                </div>
                 <div class="mb-2">
                     <div class="flex justify-between items-center mb-2">
-                        <span class="text-[10px] font-bold text-fuchsia-400 uppercase tracking-wider">Full API Response</span>
+                        <span class="text-[10px] font-bold text-fuchsia-400 uppercase tracking-wider">Full Parsed Info</span>
                         <button onclick="copyFullResponse()" id="copyFullResponseBtn" class="text-[10px] bg-fuchsia-600/40 hover:bg-fuchsia-600 px-3 py-1.5 rounded-lg transition flex items-center gap-1"><i class="fas fa-copy text-[10px]"></i> COPY FULL</button>
                     </div>
                     <div class="scroll-box-large" id="apiResponseDisplay">Waiting for response...</div>
@@ -143,7 +128,6 @@
             </div>
         </div>
         
-        <!-- Error -->
         <div id="error-box" class="hidden animate-in mb-6">
             <div class="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-center">
                 <i class="fas fa-exclamation-triangle text-red-500 text-2xl mb-2"></i>
@@ -152,7 +136,6 @@
             </div>
         </div>
         
-        <!-- Social footer with only Telegram and YouTube -->
         <div class="border-t border-white/5 pt-5">
             <p class="text-[10px] text-gray-500 text-center uppercase tracking-widest mb-3">Connect With OBSCURA CODER</p>
             <div class="grid grid-cols-2 gap-2">
@@ -164,16 +147,15 @@
     </div>
 </div>
 
-<!-- Terms Modal -->
 <div id="termsModal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4">
     <div class="bg-[#0f0f13] border border-white/10 w-full max-w-sm rounded-2xl p-6 relative shadow-2xl">
         <button onclick="closeModal('termsModal')" class="absolute top-4 right-4 text-gray-500 hover:text-white"><i class="fas fa-times"></i></button>
         <h3 class="text-lg font-bold text-white mb-4 title-font uppercase tracking-widest text-center">Terms & Conditions</h3>
         <div class="text-xs text-gray-400 space-y-3 leading-relaxed font-light text-justify">
-            <p>This website does not store any sensitive details. We only store basic data to provide quality & fast service.</p>
+            <p>This website does not store any sensitive details.</p>
             <p class="text-fuchsia-400"><strong>Disclaimer:</strong> Use this tool at your own risk. The developer is not responsible for any misuse.</p>
-            <p style="color: red;">Do not use these tokens to <strong>Violate Garena Terms & Conditions</strong> and do not try any kind of automations</p>
-            <p>The Owner Of This Web Made This tool For Educational purpose for Devlopers</p>
+            <p style="color: red;">Do not use these tokens to <strong>Violate Garena Terms & Conditions</strong>.</p>
+            <p>The Owner Of This Web Made This tool For Educational purpose for Developers</p>
             <p>By using this website, you explicitly agree to our terms and conditions.</p>
         </div>
         <button onclick="closeModal('termsModal')" class="w-full mt-6 py-2.5 rounded-lg bg-white/5 hover:bg-white/10 text-white text-xs font-bold transition">I AGREE</button>
@@ -221,19 +203,13 @@
         copyText(txt, document.getElementById('copyTokenBtn'));
     }
     
-    function copyJwtTokenOnly(){
-        const txt=document.getElementById('jwtTokenDisplay').textContent;
-        copyText(txt, document.getElementById('copyJwtBtn'));
-    }
-    
     function copyFullResponse(){
         const txt=document.getElementById('apiResponseDisplay').textContent;
         copyText(txt, document.getElementById('copyFullResponseBtn'));
     }
     
-    async function processToken(){
+    function processToken(){
         const rawInput=tokenInp.value.trim();
-        const btn=document.getElementById('btn');
         const outputDiv=document.getElementById('output');
         const errorBox=document.getElementById('error-box');
         const errorTitle=document.getElementById('error-title');
@@ -249,14 +225,24 @@
             return;
         }
         
-        let eatToken=null;
+        // Parse URL params — try URL constructor first, fallback to regex
+        let params={};
         try{
             const urlObj=new URL(rawInput);
-            eatToken=urlObj.searchParams.get('eat');
+            urlObj.searchParams.forEach((v,k)=>{ params[k]=v; });
         }catch(e){
-            const match=rawInput.match(/[?&]eat=([^&]+)/);
-            if(match) eatToken=match[1];
+            const regex=/([?&])([^=&]+)=([^&]*)/g;
+            let m;
+            while((m=regex.exec(rawInput))!==null){
+                params[decodeURIComponent(m[2])]=decodeURIComponent(m[3]);
+            }
         }
+        
+        const eatToken=params['eat'] || '';
+        const nickname=params['nickname'] ? decodeURIComponent(params['nickname']) : '-';
+        const accountId=params['account_id'] || '-';
+        const region=params['region'] || '-';
+        const lang=params['lang'] || '-';
         
         if(!eatToken){
             errorTitle.textContent='TOKEN NOT FOUND';
@@ -265,53 +251,23 @@
             return;
         }
         
-        btn.innerHTML='GENERATING... <i class="fas fa-spinner fa-spin text-xs"></i>';
-        btn.disabled=true;
+        const parsed={
+            nickname: nickname,
+            account_id: accountId,
+            region: region,
+            lang: lang,
+            eat: eatToken
+        };
+        currentResponseData=parsed;
         
-        try{
-            const apiUrl=`https://ff-token-api-obscura.vercel.app/token?eat=${encodeURIComponent(eatToken)}`;
-            const response=await fetch(apiUrl);
-            
-            if(!response.ok){
-                throw new Error(`API returned ${response.status}`);
-            }
-            
-            const data=await response.json();
-            currentResponseData=data;
-            
-            const nickname=data.nickname || data.nick || '-';
-            const region=data.region || '-';
-            const accountId=data.account_id || data.uid || '-';
-            const platform=data.platform || '-';
-            const accessToken=data.access_token || data.token || '-';
-            const jwtToken=data.jwt || data.jwt_token || null;
-            
-            document.getElementById('nick').textContent=nickname;
-            document.getElementById('reg').textContent=region;
-            document.getElementById('aid').textContent=accountId;
-            document.getElementById('platform').textContent=platform;
-            document.getElementById('accessTokenDisplay').textContent=accessToken;
-            
-            if(jwtToken){
-                document.getElementById('jwtContainer').classList.remove('hidden');
-                document.getElementById('jwtTokenDisplay').textContent=jwtToken;
-            }else{
-                document.getElementById('jwtContainer').classList.add('hidden');
-            }
-            
-            document.getElementById('apiResponseDisplay').textContent=JSON.stringify(data, null, 2);
-            
-            outputDiv.classList.remove('hidden');
-            
-        }catch(err){
-            console.error(err);
-            errorTitle.textContent='GENERATION FAILED';
-            errorMessage.textContent=err.message || 'Something went wrong. Please check your URL and try again.';
-            errorBox.classList.remove('hidden');
-        }finally{
-            btn.innerHTML='GENERATE ACCESS <i class="fas fa-arrow-right text-xs"></i>';
-            btn.disabled=false;
-        }
+        document.getElementById('nick').textContent=nickname;
+        document.getElementById('reg').textContent=region;
+        document.getElementById('aid').textContent=accountId;
+        document.getElementById('platform').textContent=lang;
+        document.getElementById('accessTokenDisplay').textContent=eatToken;
+        document.getElementById('apiResponseDisplay').textContent=JSON.stringify(parsed,null,2);
+        
+        outputDiv.classList.remove('hidden');
     }
 </script>
 </body>
