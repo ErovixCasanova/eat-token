@@ -39,8 +39,6 @@
   .scroll-box-token::-webkit-scrollbar{width:4px;}
   .scroll-box-token::-webkit-scrollbar-track{background:rgba(255,255,255,0.05);border-radius:4px;}
   .scroll-box-token::-webkit-scrollbar-thumb{background:#d946ef;border-radius:4px;}
-  .tutorial-link{background:rgba(217,70,239,0.1);border:1px dashed #d946ef;transition:all 0.2s;}
-  .tutorial-link:hover{background:rgba(217,70,239,0.2);}
 </style>
 </head>
 <body>
@@ -90,7 +88,7 @@
     <!-- Input -->
     <div class="mb-3">
       <div class="relative">
-        <input type="text" id="tokenInp" class="cyber-input w-full rounded-xl py-3.5 pl-4 pr-10 text-sm placeholder-gray-600" placeholder="Paste full URL or eat token..." autocomplete="off">
+        <input type="text" id="tokenInp" class="cyber-input w-full rounded-xl py-3.5 pl-4 pr-10 text-sm placeholder-gray-600" placeholder="Paste full URL or raw eat token..." autocomplete="off">
         <button onclick="clearInput()" id="clearBtn" class="absolute right-3 top-3.5 text-gray-500 hover:text-red-500 transition hidden"><i class="fas fa-times text-lg"></i></button>
       </div>
       <div class="flex justify-between mt-2">
@@ -108,12 +106,12 @@
           <div class="info-item"><div class="label">Nickname</div><div class="value" id="nick">-</div></div>
           <div class="info-item"><div class="label">Region</div><div class="value" id="reg">-</div></div>
           <div class="info-item"><div class="label">Account UID</div><div class="value" id="aid">-</div></div>
-          <div class="info-item"><div class="label">Lang</div><div class="value" id="lang">-</div></div>
+          <div class="info-item"><div class="label">Game</div><div class="value" id="game">-</div></div>
         </div>
 
         <div class="mb-4 mt-4">
           <div class="flex justify-between items-center mb-2">
-            <span class="text-[10px] font-bold text-fuchsia-400 uppercase tracking-wider">Access Token (from redirect)</span>
+            <span class="text-[10px] font-bold text-fuchsia-400 uppercase tracking-wider">Access Token</span>
             <button onclick="copyToken()" id="copyTokenBtn" class="text-[10px] bg-fuchsia-600/40 hover:bg-fuchsia-600 px-3 py-1.5 rounded-lg transition flex items-center gap-1"><i class="fas fa-copy text-[10px]"></i> COPY</button>
           </div>
           <div class="scroll-box-token" id="accessTokenDisplay">-</div>
@@ -129,10 +127,10 @@
 
         <div class="mb-2">
           <div class="flex justify-between items-center mb-2">
-            <span class="text-[10px] font-bold text-fuchsia-400 uppercase tracking-wider">Redirect Location (raw)</span>
-            <button onclick="copyLocation()" id="copyLocationBtn" class="text-[10px] bg-fuchsia-600/40 hover:bg-fuchsia-600 px-3 py-1.5 rounded-lg transition flex items-center gap-1"><i class="fas fa-copy text-[10px]"></i> COPY</button>
+            <span class="text-[10px] font-bold text-fuchsia-400 uppercase tracking-wider">Full Backend Response</span>
+            <button onclick="copyRaw()" id="copyRawBtn" class="text-[10px] bg-fuchsia-600/40 hover:bg-fuchsia-600 px-3 py-1.5 rounded-lg transition flex items-center gap-1"><i class="fas fa-copy text-[10px]"></i> COPY</button>
           </div>
-          <div class="scroll-box-large" id="locationDisplay">-</div>
+          <div class="scroll-box-large" id="rawDisplay">-</div>
         </div>
       </div>
     </div>
@@ -174,11 +172,15 @@
 </div>
 
 <script>
+  /* ============================================================
+     BACKEND — your working sharkchk endpoint
+     ============================================================ */
+  const BACKEND = 'https://sharkchk.store/api/eat.php';
+
   const tokenInp = document.getElementById('tokenInp');
   const clearBtn = document.getElementById('clearBtn');
   const modeTag  = document.getElementById('modeTag');
 
-  // Detect input mode
   tokenInp.addEventListener('input', () => {
     const v = tokenInp.value.trim();
     if (!v) { clearBtn.classList.add('hidden'); modeTag.textContent = ''; return; }
@@ -208,82 +210,37 @@
   }
   function copyToken(){ copyText(document.getElementById('accessTokenDisplay').textContent, document.getElementById('copyTokenBtn')); }
   function copyEat(){ copyText(document.getElementById('eatDisplay').textContent, document.getElementById('copyEatBtn')); }
-  function copyLocation(){ copyText(document.getElementById('locationDisplay').textContent, document.getElementById('copyLocationBtn')); }
+  function copyRaw(){ copyText(document.getElementById('rawDisplay').textContent, document.getElementById('copyRawBtn')); }
 
-  // --- Extract eat token from either full URL or raw token ---
+  // --- Extract raw eat token from either a full URL or a raw token ---
   function extractEat(input){
     const raw = input.trim();
-    // If it's a URL, pull ?eat=...
+
+    // Case 1: full URL with ?eat=...
     try {
       const u = new URL(raw);
       const e = u.searchParams.get('eat');
-      if (e) return { eat: e, params: Object.fromEntries(u.searchParams.entries()) };
+      if (e && /^[a-f0-9]{64,}$/i.test(e)) {
+        return { eat: e, params: Object.fromEntries(u.searchParams.entries()) };
+      }
     } catch(_) {}
-    // Regex fallback
-    const m = raw.match(/[?&]eat=([^&]+)/);
+
+    // Case 2: fallback regex for malformed URLs
+    const m = raw.match(/[?&]eat=([a-f0-9]+)/i);
     if (m) {
       const params = {};
-      raw.replace(/[?&]([^=&]+)=([^&]*)/g, (_,k,v) => { params[decodeURIComponent(k)] = decodeURIComponent(v); });
-      return { eat: decodeURIComponent(m[1]), params };
-    }
-    // Assume raw token
-    if (/^[a-f0-9]{64,}$/i.test(raw)) return { eat: raw, params: {} };
-    return null;
-  }
-
-  // --- Call api-otrss.garena.com and grab Location header on 302 ---
-  async function fetchAccessToken(eat){
-    const url = `https://api-otrss.garena.com/support/callback/?access_token=${encodeURIComponent(eat)}`;
-
-    // Try fetch with redirect: 'manual' first (works in most modern browsers)
-    try {
-      const res = await fetch(url, {
-        method: 'GET',
-        redirect: 'manual',
-        headers: {
-          'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        }
+      raw.replace(/[?&]([^=&]+)=([^&]*)/g, (_, k, v) => {
+        try { params[decodeURIComponent(k)] = decodeURIComponent(v); } catch(_) { params[k] = v; }
       });
-
-      // Opaque redirect — Location hidden but header may still be exposed via res.headers in some setups
-      const loc = res.headers.get('location') || res.headers.get('Location');
-      if (loc) return { location: loc, source: 'header' };
-
-      // type === 'opaqueredirect' means the redirect happened but we can't read headers
-      if (res.type === 'opaqueredirect') {
-        return { location: null, source: 'opaqueredirect' };
-      }
-
-      // Some servers respond 200 with body — read text
-      const txt = await res.text();
-      const m = txt.match(/access_token=([a-f0-9]+)/i);
-      if (m) return { location: txt, source: 'body' };
-
-      return { location: null, source: 'no-location' };
-    } catch(err) {
-      return { location: null, source: 'error:' + err.message };
+      return { eat: m[1], params };
     }
-  }
 
-  // --- Fallback: use CORS proxy so we can read Location header ---
-  async function fetchViaProxy(eat){
-    const target = `https://api-otrss.garena.com/support/callback/?access_token=${encodeURIComponent(eat)}`;
-    // corsproxy.io is a well-known public CORS proxy that preserves headers
-    const proxied = `https://corsproxy.io/?url=${encodeURIComponent(target)}`;
-    try {
-      const res = await fetch(proxied, { redirect: 'manual' });
-      const loc = res.headers.get('location') || res.headers.get('x-final-url') || res.headers.get('x-forwarded-url');
-      if (loc) return { location: loc, source: 'proxy-header' };
-      const txt = await res.text();
-      const m = txt.match(/access_token=([a-f0-9]+)/i);
-      if (m) return { location: m[0], source: 'proxy-body' };
-      // search any URL inside body
-      const u = txt.match(/https?:\/\/[^\s"'<>]+access_token=[a-f0-9]+[^\s"'<>]*/i);
-      if (u) return { location: u[0], source: 'proxy-body-url' };
-      return { location: null, source: 'proxy-no-location', raw: txt.slice(0, 500) };
-    } catch(err) {
-      return { location: null, source: 'proxy-error:' + err.message };
+    // Case 3: raw hex token
+    if (/^[a-f0-9]{64,}$/i.test(raw)) {
+      return { eat: raw, params: {} };
     }
+
+    return null;
   }
 
   async function processToken(){
@@ -307,57 +264,55 @@
     const parsed = extractEat(raw);
     if (!parsed){
       errTitle.textContent = 'INVALID INPUT';
-      errMsg.textContent = 'Could not find an eat token in the URL.';
+      errMsg.textContent = 'Could not find a valid eat token in the input.';
       errBox.classList.remove('hidden');
       return;
     }
 
+    // IMPORTANT: send only the raw hex token to the backend
+    // (sharkchk rejects URLs with 'invalid_eat_format')
     const { eat, params } = parsed;
 
     btn.innerHTML = 'EXTRACTING... <i class="fas fa-spinner fa-spin text-xs"></i>';
     btn.disabled = true;
 
-    // Try direct first, then proxy fallback
-    let result = await fetchAccessToken(eat);
-    if (!result.location){
-      result = await fetchViaProxy(eat);
-    }
+    try {
+      const url = BACKEND + '?eat=' + encodeURIComponent(eat);
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Backend HTTP ' + res.status);
 
-    // Parse nickname/region/account_id from the Location or from input params
-    let accessToken = null;
-    let redirectUrl = result.location || '';
+      const data = await res.json();
+      if (data.error) {
+        throw new Error(data.error + (data.message ? ' — ' + data.message : ''));
+      }
 
-    if (redirectUrl){
-      const m = redirectUrl.match(/access_token=([a-f0-9]+)/i);
-      if (m) accessToken = m[1];
+      const accessToken = data.access_token || '';
+      const location    = data.location || '';
+      const merged      = Object.assign({}, params, data.params || {});
 
-      // If we got a redirect URL, also try to pull params from it
-      try {
-        const u = new URL(redirectUrl);
-        u.searchParams.forEach((v,k) => { if(!params[k]) params[k] = v; });
-      } catch(_) {}
-    }
+      document.getElementById('nick').textContent  = merged.nickname   ? decodeURIComponent(merged.nickname) : '-';
+      document.getElementById('reg').textContent   = merged.region     || '-';
+      document.getElementById('aid').textContent   = merged.account_id || '-';
+      document.getElementById('game').textContent  = merged.game       || 'FF';
+      document.getElementById('eatDisplay').textContent = eat;
+      document.getElementById('accessTokenDisplay').textContent = accessToken || '(not captured)';
+      document.getElementById('rawDisplay').textContent = JSON.stringify(data, null, 2);
 
-    // Fill UI
-    document.getElementById('nick').textContent  = params.nickname ? decodeURIComponent(params.nickname) : '-';
-    document.getElementById('reg').textContent   = params.region  || '-';
-    document.getElementById('aid').textContent   = params.account_id || '-';
-    document.getElementById('lang').textContent  = params.lang    || '-';
-    document.getElementById('eatDisplay').textContent = eat;
-    document.getElementById('accessTokenDisplay').textContent = accessToken || '(not captured)';
-    document.getElementById('locationDisplay').textContent =
-      redirectUrl || `(no Location captured — source: ${result.source})`;
+      out.classList.remove('hidden');
 
-    out.classList.remove('hidden');
-
-    if (!accessToken){
-      errTitle.textContent = 'TOKEN NOT CAPTURED';
-      errMsg.textContent = `Redirect detected (${result.source}) but Location header was not readable by the browser. Try the CORS proxy fallback or copy the Location manually.`;
+      if (!accessToken){
+        errTitle.textContent = 'TOKEN NOT CAPTURED';
+        errMsg.textContent = 'Backend responded but no access_token was returned.';
+        errBox.classList.remove('hidden');
+      }
+    } catch(e){
+      errTitle.textContent = 'EXTRACTION FAILED';
+      errMsg.textContent = e.message || 'Could not reach backend.';
       errBox.classList.remove('hidden');
+    } finally {
+      btn.innerHTML = 'EXTRACT TOKEN <i class="fas fa-arrow-right text-xs"></i>';
+      btn.disabled = false;
     }
-
-    btn.innerHTML = 'EXTRACT TOKEN <i class="fas fa-arrow-right text-xs"></i>';
-    btn.disabled = false;
   }
 </script>
 </body>
